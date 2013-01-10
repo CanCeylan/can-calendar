@@ -28,6 +28,7 @@ class RoomsController < ApplicationController
   def new
     @room = Room.new
     @room.events.build
+
     respond_to do |format|
       format.html # new.html.erb
       format.json { render json: @room }
@@ -37,15 +38,21 @@ class RoomsController < ApplicationController
   # GET /rooms/1/edit
   def edit
     @room = Room.find(params[:id])
+
     if params[:eid] != nil
       @event = @room.events.find(params[:eid])
+      respond_to do |format|
+        format.js { render :layout => false}
+      end
+    elsif params[:from] == 'select'
+      @event = @room.events.build
       respond_to do |format|
         format.js { render :layout => false}
       end
     else
       @event = @room.events
       respond_to do |format|
-        format.html { render :layout => false}
+        format.js { render :layout => false }
       end
     end
   end
@@ -73,11 +80,13 @@ class RoomsController < ApplicationController
 
     respond_to do |format|
       if @room.update_attributes(params[:room])
-        format.html { redirect_to @room, notice: 'Room was successfully updated.' }
-        format.json { head :no_content }
+        #format.html { redirect_to @room, notice: 'Room was successfully updated.' }
+        #format.json { head :no_content }
+        format.js { render :layout => false }
       else
-        format.html { render action: "edit" }
-        format.json { render json: @room.errors, status: :unprocessable_entity }
+        #format.html { render action: "edit" }
+        #format.json { render json: @room.errors, status: :unprocessable_entity }
+        format.js { render :layout => false }
       end
     end
   end

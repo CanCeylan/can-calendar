@@ -1,36 +1,40 @@
 
-    <%= f.fields_for :events, @event,  :remote => true  do |builder| %>
-        <div class="control-group">
-          <%= builder.label :name, :class => 'control-label' %>
-          <div class="controls">
-            <%= builder.text_field :name, :class => 'text_field', :name => 'rooms[even' %>
-          </div>
+    <%= f.fields_for :events, @event  do |builder| %>
+        <% div_for(builder.object) do %>
+            <div class="control-group">
+              <%= builder.label :name, :class => 'control-label' %>
+              <div class="controls">
+                <%= builder.text_field :name, :class => 'text_field' %>
+              </div>
+            </div>
+            <div class="control-group">
+              <%= builder.label :start_date, :class => 'control-label' %>
+              <div class="controls">
+                <%= builder.text_field :start_date, :class => 'datepicker' %>
+              </div>
+            </div>
+            <div class="control-group">
+              <%= builder.label :end_date, :class => 'control-label' %>
+              <div class="controls">
+                <%= builder.text_field :end_date, :class => 'datepicker' %>
+              </div>
+            </div>
+            <div class="control-group">
+              <%= builder.label :price, :class => 'control-label' %>
+              <div class="controls">
+                <%= builder.number_field :price, :class => 'number_field' %>
+              </div>
+            </div>
+            <div class="control-group">
+              <%= builder.label :color, :class => 'control-label' %>
+              <div class="controls">
+                <%= builder.text_field :color, :class => 'colorpicker' %>
+              </div>
+            </div>
         </div>
-        <div class="control-group">
-          <%= builder.label :start_date, :class => 'control-label' %>
-          <div class="controls">
-            <%= builder.text_field :start_date, :class => 'datepicker' %>
-          </div>
-        </div>
-        <div class="control-group">
-          <%= builder.label :end_date, :class => 'control-label' %>
-          <div class="controls">
-            <%= builder.text_field :end_date, :class => 'datepicker' %>
-          </div>
-        </div>
-        <div class="control-group">
-          <%= builder.label :price, :class => 'control-label' %>
-          <div class="controls">
-            <%= builder.number_field :price, :class => 'number_field' %>
-          </div>
-        </div>
-        <div class="control-group">
-          <%= builder.label :color, :class => 'control-label' %>
-          <div class="controls">
-            <%= builder.text_field :color, :class => 'colorpicker' %>
-          </div>
-        </div>
+        <% end %>
     <% end %>
+
 
 <script>
     $(".datepicker").datepicker({ dateFormat:'yy-mm-dd' });

@@ -21,7 +21,6 @@
 
 
         $("#roomEvents").html('<%= escape_javascript(render :template => "rooms/edit", :formats => [:html], :handlers => [:erb]) %>');
-        $('#roomEvents').modal('toggle');
         $(".datepicker").datepicker({ dateFormat:'yy-mm-dd' });
 
 
@@ -47,52 +46,18 @@
 
             select:function (start, end, allDay, jsEvent, view, resource) {
 
-                var pobj = {event:{start_date:start.getFullYear().toString() + '-' + (start.getMonth() + 1).toString() + '-' + start.getDate(),
-                                    end_date:end.getFullYear().toString() + '-' + (end.getMonth() + 1).toString() + '-' + end.getDate(), room_id: '<%= @room.id  %>'},
-                            authenticity_token:'<%= form_authenticity_token  %>',
-                            eType: 'select'};
+                var url = '<%= edit_room_path(@room) %>';
 
-                var url = '/events/new';
-
-                $.get(url, pobj, function (data) {
-                    $("#clickRes").html(data);
-                    $('#clickRes').modal('toggle');
+                $.get(url, {eid: event.id, from: 'select'}, function (data) {
                 });
             },
             eventDrop:function (event, dayDelta, minuteDelta, allDay, revertFunc, jsEvent, ui, view) {
 
                 var start = event.start;
-                var end = event.end;
-                var ide = event.id;
-                var droppable = true;
-                calendar.fullCalendar('clientEvents', function (event) {
-                    if(ide != event.id && start.toString() == event.start.toString()){
-                        droppable = false;
-                    }
-                });
-                if (event.end != null) {
-                    var pobj = { id:event.id,
-                        event:{start_date:event.start.toDateString(), end_date:event.end.toDateString(), room_id: '<%= @room.id  %>' },
-                        authenticity_token:'<%= form_authenticity_token  %>',
-                        eType: 'drop'};
-                } else {
-                    var pobj = { id:event.id,
-                        event:{start_date:event.start.toDateString(), end_date:event.start.toDateString(), room_id: '<%= @room.id  %>'},
-                        authenticity_token:'<%= form_authenticity_token  %>',
-                        eType: 'drop' };
-                }
 
-                $.ajax({
-                    type:"PUT",
-                    dataType:'script',
-                    url:'/events/' + event.id,
-                    data: pobj,
-                    success:function () {
-                    },
-                    error:function (e) {
-                        revertFunc();
-                    }
-                });
+                $("#event_" + event.id + " input[id$=_start_date]").val(start);
+                $("#event_" + event.id + " input[id$=_end_date]").val(start);
+                $('#submitHiddenRoom').click();
 
             },
 
