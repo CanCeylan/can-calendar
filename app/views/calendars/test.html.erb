@@ -1,0 +1,162 @@
+
+<h1>Listing calendars</h1>
+
+
+<h2>Calendar Demo</h2>
+<div id='calendar' style='margin:3em 0;font-size:13px'></div>
+
+
+<%=  @events  %>
+<br>
+<%=  @resources  %>
+
+
+
+<table>
+  <tr>
+    <th></th>
+    <th></th>
+    <th></th>
+  </tr>
+
+  <% @calendars.each do |calendar| %>
+      <tr>
+        <td><%=  calendar.title %></td>
+        <td><%= Resource.find(calendar.resource_id).name %></td>
+        <td></td>
+
+        <td><%= link_to 'Show', calendar %></td>
+        <td><%= link_to 'Edit', edit_calendar_path(calendar) %></td>
+        <td><%= link_to 'Destroy', calendar, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+  <% end %>
+</table>
+
+<br />
+
+<%= link_to 'New Calendar', new_calendar_path %>
+
+
+<!-- Button to trigger modal -->
+<a href="#myModal" role="button" class="btn" data-toggle="modal">Launch demo modal</a>
+
+<!-- Modal -->
+<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Modal header</h3>
+  </div>
+  <div class="modal-body">
+    <p>One fine body…</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn btn-primary">Save changes</button>
+  </div>
+</div>
+
+
+<script type='text/javascript'>
+
+    $(document).ready(function() {
+
+        var date = new Date();
+        var d = date.getDate();
+        var m = date.getMonth();
+        var y = date.getFullYear();
+
+
+        var calendar = $('#calendar').fullCalendar({
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'resourceDay,resourceWeek,resourceNextWeeks,resourceMonth'
+            },
+            defaultView: 'resourceWeek',
+            firstDay: 1,
+            editable: true,
+            selectable: true,
+            minTime: 8,
+            maxTime:16,
+            selectHelper: true,
+            resources: <%=  @resources.html_safe  %>,
+            events:<%=  @events.html_safe  %>,
+
+            select: function(start, end, allDay, jsEvent, view, resource) {
+                var title = prompt('event title:');
+                //alert(end);
+
+                var pobj = {calendar: {title: title,
+                    start_date: start.toDateString(),
+                    resource_id: resource.id,
+                    end_date: end.toDateString()},
+                    authenticity_token: '<%= form_authenticity_token  %>' };
+                if(title){
+                    $.ajax({
+                        type: 'POST',
+                        dataType: 'json',
+                        url: 'calendars#create',
+                        data: pobj,
+                        success: function (data, response, event, date) {
+                            //  alert(data);
+                            calendar.fullCalendar('renderEvent',
+                                    {
+                                        id: data.id,
+                                        title: title,
+                                        start: start,
+                                        end: end,
+                                        resource: resource.id
+                                    },
+                                    true // make the event "stick"
+                            );
+                        }
+                    });
+                    calendar.fullCalendar('unselect');
+                }
+            },
+
+            eventDrop: function( event, dayDelta, minuteDelta, revertFunc, jsEvent, ui, view ) {
+                //alert('event moved to ' + event.start+ ' to ' + event.resource);
+
+                //alert(Object.keys(event));
+                // alert('Event start is: ' + event.start + '\nEvent end is: ' + event.end + '\nEvent _end is: ' + event._end + '\Event id: ' + event.id);
+
+//                if(!event.end){
+//                    event.end = event.start;
+//                }
+                calendar.fullCalendar( 'updateEvent', event );
+                if (event.end != null) {
+                    //alert('hey' + event.end);
+                    var pobj = { id: event.id,
+                        calendar: {start_date: event.start.toDateString(), end_date: event.end.toDateString() , resource_id: parseInt(event.resource)},
+                        authenticity_token: '<%= form_authenticity_token  %>' };
+
+                }else{
+                    var pobj = { id: event.id,
+                        calendar: {start_date: event.start.toDateString(),  resource_id: parseInt(event.resource)},
+                        authenticity_token: '<%= form_authenticity_token  %>' };
+                }
+                $.ajax({
+                    type: "PUT",
+                    dataType: 'json',
+                    url: '/calendars/' + event.id,
+                    data: pobj,
+                    success: function() {
+                        //alert( "Data Saved: ");
+                    }
+                });
+            },
+
+            eventResize: function( event, dayDelta, minuteDelta, revertFunc, jsEvent, ui, view ) {
+                alert('event was resized, new endtime: '+event.end);
+            },
+            eventClick: function ( event, jsEvent, view )  {
+                alert('event '+event.title+' was left clicked');
+            },
+            windowResize: function( view ) {
+                calendar.fullCalendar('option', 'height', $(window).height() - 40);
+            }
+        });
+    });
+
+</script>

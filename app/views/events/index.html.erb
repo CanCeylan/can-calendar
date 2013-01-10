@@ -1,0 +1,185 @@
+<%- model_class = Event -%>
+
+<div class="page-header">
+  <h1><%= t '.title', :default => model_class.model_name.human.pluralize %></h1>
+</div>
+
+<table class="table table-striped">
+  <thead>
+  <tr>
+    <th><%= model_class.human_attribute_name(:id) %></th>
+    <th><%= model_class.human_attribute_name(:name) %></th>
+    <th><%= model_class.human_attribute_name(:start_date) %></th>
+    <th><%= model_class.human_attribute_name(:end_date) %></th>
+    <th><%= model_class.human_attribute_name(:price) %></th>
+    <th><%= model_class.human_attribute_name(:created_at) %></th>
+    <th><%= t '.actions', :default => t("helpers.actions") %></th>
+  </tr>
+  </thead>
+  <tbody>
+
+  <div id='calendar' style='margin:3em 0;font-size:10px'></div>
+
+  <% @events.each do |event| %>
+      <tr>
+        <td><%= link_to event.id, event_path(event) %></td>
+        <td><%= event.name %></td>
+        <td><%= event.start_date %></td>
+        <td><%= event.end_date %></td>
+        <td><%= event.price %></td>
+        <td><%= l event.created_at %></td>
+        <td>
+          <%= link_to t('.edit', :default => t("helpers.links.edit")),
+                      edit_event_path(event), :class => 'btn btn-mini' %>
+          <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
+                      event_path(event),
+                      :method => :delete,
+                      :data => {:confirm => t('.confirm', :default => t("helpers.links.confirm", :default => 'Are you sure?'))},
+                      :class => 'btn btn-mini btn-danger' %>
+        </td>
+      </tr>
+  <% end %>
+
+  <div id="clickRes" class="modal hide fade">
+
+  </div>
+
+
+  </tbody>
+</table>
+
+
+<script type='text/javascript'>
+
+    var calendar;
+    $(document).ready(function () {
+
+
+        $(".datepicker").datepicker({ dateFormat:'yy-mm-dd' });
+        $('.colorpicker').colorPicker();
+
+
+        var date = new Date();
+        var d = date.getDate();
+        var m = date.getMonth();
+        var y = date.getFullYear();
+
+        calendar = $('#calendar').fullCalendar({
+            header:{
+                left:'prev,next today',
+                center:'title',
+                right:'month,agendaWeek,agendaDay'
+            },
+            selectable:true,
+            theme:true,
+            selectHelper:true,
+            editable:true,
+            events:<%=  @Jevents.html_safe  %>,
+            eventRender:function (event, element) {
+                element.find('.fc-event-title').append("<br/><br/>$ " + event.price);
+            },
+
+            select:function (start, end, allDay, jsEvent, view, resource) {
+
+                var pobj = {event:{start_date:start.getFullYear().toString() + '-' + (start.getMonth() + 1).toString() + '-' + start.getDate(),
+                                   end_date:end.getFullYear().toString() + '-' + (end.getMonth() + 1).toString() + '-' + end.getDate()},
+                                   authenticity_token:'<%= form_authenticity_token  %>',
+                                   eType: 'select'};
+
+                var url = '/events/new';
+
+                $.get(url, pobj, function (data) {
+                    $("#clickRes").html(data);
+                    $('#clickRes').modal('toggle');
+                }).success(function (data) {
+                });
+            },
+            eventDrop:function (event, dayDelta, minuteDelta, allDay, revertFunc, jsEvent, ui, view) {
+
+                var start = event.start;
+                var end = event.end;
+                var ide = event.id;
+                var droppable = true;
+                calendar.fullCalendar('clientEvents', function (event) {
+                    if(ide != event.id && start.toString() == event.start.toString()){
+                            droppable = false;
+                    }
+                });
+                if(true){
+                    if (event.end != null) {
+                        var pobj = { id:event.id,
+                            event:{start_date:event.start.toDateString(), end_date:event.end.toDateString()},
+                            authenticity_token:'<%= form_authenticity_token  %>',
+                            eType: 'drop'};
+                    } else {
+                        var pobj = { id:event.id,
+                            event:{start_date:event.start.toDateString(), end_date:event.start.toDateString()},
+                            authenticity_token:'<%= form_authenticity_token  %>',
+                            eType: 'drop' };
+                    }
+
+                    $.ajax({
+                        type:"PUT",
+                        dataType:'script',
+                        url:'/events/' + event.id,
+                        data: pobj,
+                        success:function () {
+                        },
+                        error:function (e) {
+                            revertFunc();
+                        }
+                    });
+                }else{
+                    revertFunc();
+                    calendar.fullCalendar('refetchEvents');
+                }
+            },
+
+            eventResize:function (event, dayDelta, minuteDelta, revertFunc, jsEvent, ui, view) {
+
+                if (event.end != null) {
+                    var pobj = { id:event.id,
+                        event:{name: event.title, price: event.price, start_date:event.start.toDateString(), end_date:event.end.toDateString(), color:event.backgroundColor},
+                               authenticity_token:'<%= form_authenticity_token  %>',
+                               eType: 'resize'};
+
+                } else {
+                    var pobj = { id:event.id,
+                        calendar:{name: event.title, price: event.price, start_date:event.start.toDateString(), end_date:event.start.toDateString(), color:event.backgroundColor},
+                                authenticity_token:'<%= form_authenticity_token  %>',
+                                eType: 'resize'};
+                }
+
+                $.ajax({
+                    type:"POST",
+                    dataType:'script',
+                    url:'events#create',
+                    data:pobj,
+                    success:function () {
+                    },
+                    error:function () {
+                        revertFunc();
+                        calendar.fullCalendar('refetchEvents');
+                    }
+                });
+            },
+            eventClick:function (event, jsEvent, view) {
+
+                var url = '/events/' + event.id + '/edit?opt=1';
+
+                $.get(url,function (data) {
+                })
+                     .error(function(){
+                            alert('hata');
+                        });
+            },
+            windowResize:function (view) {
+                calendar.fullCalendar('option', 'height', $(window).height() - 40);
+            }
+        });
+
+    });
+
+</script>
+
+

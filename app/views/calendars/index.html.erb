@@ -1,0 +1,326 @@
+<style type="text/css">
+
+        /* Sticky footer styles
+       -------------------------------------------------- */
+
+    html,
+    body {
+        height: 100%;
+        /* The html and body elements cannot have any padding or margin. */
+    }
+
+        /* Wrapper for page content to push down footer */
+    #wrap {
+        min-height: 100%;
+        height: auto !important;
+        height: 100%;
+        /* Negative indent footer by it's height */
+        margin: 0 auto -60px;
+    }
+
+        /* Set the fixed height of the footer here */
+    #push,
+    #footer {
+        height: 60px;
+    }
+    #footer {
+        background-color: #f5f5f5;
+    }
+
+        /* Lastly, apply responsive CSS fixes as necessary */
+    @media (max-width: 767px) {
+        #footer {
+            margin-left: -20px;
+            margin-right: -20px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+    }
+
+
+
+        /* Custom page CSS
+       -------------------------------------------------- */
+        /* Not required for template or sticky footer method. */
+
+    .container {
+        width: auto;
+        max-width: 1080px;
+    }
+    .container .credit {
+        margin: 20px 0;
+    }
+
+</style>
+
+<!-- Part 1: Wrap all page content here -->
+<div id="wrap">
+
+
+  <!-- Begin page content -->
+  <div class="container">
+
+
+    <div class="page-header">
+      <h1>Listing calendars</h1>
+    </div>
+    <p class="lead">Pin a fixed-height footer to the bottom of the viewport in desktop browsers with this custom HTML and CSS.</p>
+
+
+    <h3>Calendar Demo</h3>
+    <div id='calendar' style='margin:3em 0;font-size:10px'></div>
+
+
+    <%=  @events  %>
+    <br>
+    <%=  @resources  %>
+
+
+
+    <table>
+      <tr>
+        <th></th>
+        <th></th>
+        <th></th>
+      </tr>
+
+      <% @calendars.each do |calendar| %>
+          <tr>
+            <td><%=  calendar.title %></td>
+            <td><%= Resource.find(calendar.resource_id).name %></td>
+            <td></td>
+
+            <td><%= link_to 'Show', calendar %></td>
+            <td><%= link_to 'Edit', edit_calendar_path(calendar) %></td>
+            <td><%= link_to 'Destroy', calendar, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+          </tr>
+      <% end %>
+    </table>
+
+    <br />
+
+    <%= link_to 'New Calendar', new_calendar_path %>
+
+
+    <!-- Button to trigger modal -->
+    <!--<a href="#myModal" role="button" class="btn" data-toggle="modal">Launch demo modal</a>-->
+
+    <!-- Modal -->
+    <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Event Title</h3>
+      </div>
+      <div class="modal-body">
+        <form id="event">
+          <input type="text" placeholder="Type something…">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+
+
+
+    <div id="msgModal" class="modal hide fade">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3></h3>
+      </div>
+      <div class="check-in">
+      </div>
+      <div class="check-out">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger delete-btn" data-dismiss="modal" aria-hidden="true">Delete</button>
+        <button class="btn btn-primary callback-btn" data-dismiss="modal" >Close</button>
+        <!--<a href="/calendars/134" class='btn btn-danger delete-btn' data-confirm="Are you sure?" data-method="delete" rel="nofollow">Destroy</a>-->
+      </div>
+    </div>
+
+
+  </div>
+
+  <div id="push"></div>
+</div>
+
+<div id="footer">
+  <div class="container">
+    <p class="muted credit">Example courtesy <a href="http://martinbean.co.uk">Martin Bean</a> and <a href="http://ryanfait.com/sticky-footer/">Ryan Fait</a>.</p>
+  </div>
+</div>
+
+
+<script type='text/javascript'>
+
+
+
+
+    $(document).ready(function() {
+
+        var date = new Date();
+        var d = date.getDate();
+        var m = date.getMonth();
+        var y = date.getFullYear();
+
+
+        var $msgModal = $('#msgModal').modal({ show : false, keyboard : false}),
+                showMsg = function (header, start, end, event, callback) {
+                    var delId = event.id;
+                    $msgModal
+                            .find('.modal-header > h3').text(header).end()
+                            .find('.check-in').text(start).end()
+                            .find('.check-out').text(end).end()
+                            .find('.callback-btn').off('click.callback')
+                            .on('click.callback', callback).end().modal('show')
+                            .find('.delete-btn').on("click", function(){
+                                $.ajax({
+                                    type: 'DELETE',
+                                    dataType: 'json',
+                                    url: 'calendars/' + delId,
+                                    data: delId,
+                                    success: function (data, response, date) {
+                                        //alert('Delete only ' + delId + ' event.\n');
+                                        calendar.fullCalendar('removeEvents', delId);
+                                        calendar.fullCalendar('refetchEvents');
+                                    }
+                                });
+                            });
+                }
+
+        var calendar = $('#calendar').fullCalendar({
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'resourceDay,resourceWeek,resourceNextWeeks,resourceMonth'
+            },
+            defaultView: 'resourceWeek',
+            firstDay: 1,
+            editable: true,
+            selectable: true,
+            minTime: 8,
+            maxTime:16,
+            selectHelper: true,
+            resources: <%=  @resources.html_safe  %>,
+            events:<%=  @events.html_safe  %>,
+
+            select: function(start, end, allDay, jsEvent, view, resource) {
+                var title; //= prompt('event title:');
+                bootbox.prompt("Reservation name:", function(result) {
+                        title = result;
+                        if(title){
+
+                            var pobj = {calendar: {title: title,
+                                start_date: start.toDateString(),
+                                resource_id: resource.id,
+                                end_date: end.toDateString()},
+                                authenticity_token: '<%= form_authenticity_token  %>' };
+
+                            $.ajax({
+                                type: 'POST',
+                                dataType: 'json',
+                                url: 'calendars#create',
+                                data: pobj,
+                                success: function (data, response, event, date) {
+
+                                    calendar.fullCalendar('renderEvent',
+                                            {
+                                                id: data.id,
+                                                title: title,
+                                                allDay: true,
+                                                start: start,
+                                                end: end,
+                                                resource: resource.id
+                                            },
+                                            true // make the event "stick"
+                                    );
+                                }
+                            });
+                            calendar.fullCalendar('unselect');
+                        }
+                });
+            },
+
+            eventDrop: function(  event, dayDelta, minuteDelta, allDay, revertFunc, jsEvent, ui, view ) {
+
+
+                //calendar.fullCalendar( 'updateEvent', event );
+                if (event.end != null) {
+                    var pobj = { id: event.id,
+                        calendar: {start_date: event.start.toDateString(), end_date: event.end.toDateString() , resource_id: parseInt(event.resource)},
+                        authenticity_token: '<%= form_authenticity_token  %>' };
+
+                }else{
+                    var pobj = { id: event.id,
+                        calendar: {start_date: event.start.toDateString(), end_date: event.start.toDateString(),  resource_id: parseInt(event.resource)},
+                        authenticity_token: '<%= form_authenticity_token  %>' };
+                }
+                $.ajax({
+                    type: "PUT",
+                    dataType: 'json',
+                    url: '/calendars/' + event.id,
+                    data: pobj,
+                    success: function() {
+//                        alert( "Data Saved: ");
+                    },
+                    error: function(){
+                        revertFunc();
+//                        alert('problem. ' + event.start.toDateString() + revertFunc);
+//                        alert('problem. ' + event.start.toDateString() + );
+                        //calendar.fullCalendar( 'removeEvents');
+                        calendar.fullCalendar('refetchEvents');
+                        //calendar.fullCalendar('rerenderEvents');
+
+                    }
+                });
+            },
+
+            eventResize: function( event, dayDelta, minuteDelta, revertFunc, jsEvent, ui, view ) {
+                //alert('event was resized, new endtime: '+event.end);
+                if (event.end != null) {
+                    var pobj = { id: event.id,
+                        calendar: {start_date: event.start.toDateString(), end_date: event.end.toDateString() , resource_id: parseInt(event.resource)},
+                        authenticity_token: '<%= form_authenticity_token  %>' };
+
+                }else{
+                    var pobj = { id: event.id,
+                        calendar: {start_date: event.start.toDateString(), end_date: event.start.toDateString(),  resource_id: parseInt(event.resource)},
+                        authenticity_token: '<%= form_authenticity_token  %>' };
+                }
+                $.ajax({
+                    type: "PUT",
+                    dataType: 'json',
+                    url: '/calendars/' + event.id,
+                    data: pobj,
+                    success: function() {
+//                        alert( "Data Saved: ");
+                    },
+                    error: function(){
+                        revertFunc();
+                        calendar.fullCalendar('refetchEvents');
+                    }
+                });
+            },
+            eventClick: function ( event, jsEvent, view )  {
+                var endTime;
+                if (event.end == null)
+                    endTime = event.start;
+                else
+                    endTime = event.end;
+
+                showMsg(event.title,
+                        'Check in: ' + event.start.toDateString(),
+                        'Check out: ' + endTime.toDateString(),
+                        event,
+                        function () {
+                            console.log("Closing message from event", d, event);
+                        });
+            },
+            windowResize: function( view ) {
+                calendar.fullCalendar('option', 'height', $(window).height() - 40);
+            }
+        });
+    });
+
+</script>

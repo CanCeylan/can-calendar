@@ -1,0 +1,10 @@
+$(document).ready(function(){
+
+    if('<%= @eType %>' != 'resize'){
+        $('#clickRes').modal('toggle');
+    }
+    calendar.fullCalendar( 'removeEvents');
+    calendar.fullCalendar( 'addEventSource', <%=  @Jevents.html_safe  %> );
+    calendar.fullCalendar('refetchEvents');
+
+});

@@ -1,0 +1,51 @@
+<%= form_for @event, :html => { :class => 'form-horizontal' }, :remote => true do |f| %>
+  <div class="control-group">
+    <%= f.label :name, :class => 'control-label' %>
+    <div class="controls">
+      <%= f.text_field :name, :class => 'text_field' %>
+    </div>
+  </div>
+  <div class="control-group">
+    <%= f.label :start_date, :class => 'control-label' %>
+    <div class="controls">
+      <%= f.text_field :start_date, :class => 'datepicker' %>
+    </div>
+  </div>
+  <div class="control-group">
+    <%= f.label :end_date, :class => 'control-label' %>
+    <div class="controls">
+      <%= f.text_field :end_date, :class => 'datepicker' %>
+    </div>
+  </div>
+  <div class="control-group">
+    <%= f.label :price, :class => 'control-label' %>
+    <div class="controls">
+      <%= f.number_field :price, :class => 'number_field' %>
+    </div>
+  </div>
+    <div class="control-group">
+      <%= f.label :color, :class => 'control-label' %>
+      <div class="controls">
+        <%= f.text_field :color, :class => 'colorpicker' %>
+      </div>
+      <%= f.hidden_field :room_id, :value => @event.room_id %>
+    </div>
+
+  <div class="form-actions">
+    <%= f.submit nil, :class => 'btn btn-primary', :remote => true  %>
+    <%= link_to t('.cancel', :default => t("helpers.links.cancel")),
+                '#', :class => 'btn', 'data-dismiss' => 'modal' %>
+    <% if @event.id != nil %>
+        <%= link_to t('.destroy', :default => t("helpers.links.destroy")),
+                    event_path(@event),
+                    :method => :delete,
+                    :remote => true,
+                    :class => 'btn btn-danger' %>
+    <% end %>
+  </div>
+<% end %>
+
+<script>
+    $(".datepicker").datepicker({ dateFormat:'yy-mm-dd' });
+    $('.colorpicker').colorPicker({pickerDefault: "#36c"});
+</script>
