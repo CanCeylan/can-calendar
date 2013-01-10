@@ -37,6 +37,17 @@ class RoomsController < ApplicationController
   # GET /rooms/1/edit
   def edit
     @room = Room.find(params[:id])
+    if params[:eid] != nil
+      @event = @room.events.find(params[:eid])
+      respond_to do |format|
+        format.js { render :layout => false}
+      end
+    else
+      @event = @room.events
+      respond_to do |format|
+        format.html { render :layout => false}
+      end
+    end
   end
 
   # POST /rooms
