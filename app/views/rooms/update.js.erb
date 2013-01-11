@@ -1,34 +1,14 @@
 $(document).ready(function(){
 
-    if ( '<%= @eType %>' == 'expand'){
-
-        calendar.fullCalendar( 'removeEvents');
-        <% if @Jevents != nil %>
-            calendar.fullCalendar( 'addEventSource', <%=  @Jevents.html_safe %> );
-        <% end %>
-        $('#clickRes').modal('toggle');
-    }else{
-
-        if ('<%= @eType %>' != 'drop') {
-            $('#clickRes').modal('toggle');
-        }
-
-        <% if @data != nil %>
-            var updatedEvent = <%= @data.html_safe  unless @data == nil  %>;
-        <% end %>
-
-        var myEvent = {
-            id: updatedEvent.id,
-            title: updatedEvent.title,
-            start: updatedEvent.start,
-            end: updatedEvent.end,
-            price: updatedEvent.price,
-            backgroundColor: updatedEvent.backgroundColor
-        };
-
-        calendar.fullCalendar( 'removeEvents', updatedEvent.id );
-        calendar.fullCalendar( 'renderEvent', myEvent );
-    }
-
-
+    calendar.fullCalendar('removeEvents');
+    <% if @Jevents != nil %>
+        console.log('test');
+        calendar.fullCalendar( 'addEventSource', <%=  @Jevents.html_safe %> );
+    <% end %>
+    $("#clickRes").html('');
+    $('#clickRes').modal('hide')
+    //alert($("#roomEvents").html());
+    $("#roomEvents").html('<%= escape_javascript(render :template => "rooms/edit", :formats => [:html], :handlers => [:erb]) %>');
+    $('#myModal').modal('hide')
+    console.log('test2');
 });

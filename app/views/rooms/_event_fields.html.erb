@@ -31,7 +31,16 @@
                 <%= builder.text_field :color, :class => 'colorpicker' %>
               </div>
             </div>
+            <div class="control-group">
+              <div class="controls">
+                <% unless builder.object.new_record?  %>
+                    <%= builder.hidden_field :_destroy %>
+                    <%= builder.button 'Delete', :remote => true, :class => 'btn btn-danger eventDel', :eid => builder.object.id%>
+                <% end %>
+              </div>
+            </div>
         </div>
+
         <% end %>
     <% end %>
 

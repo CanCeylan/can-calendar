@@ -1,7 +1,14 @@
 $(document).ready(function(){
 
+    $('#clickRes').modal('show');
+
     $("#clickRes").html('<%= escape_javascript(render :template => "rooms/edit", :formats => [:html], :handlers => [:erb]) %>');
-    $('#clickRes').modal('toggle');
 
-
+    $(".eventDel").click(function () {
+        var eid = $(".eventDel").attr("eid");
+        $("#event_" + eid + " input[id $=_destroy]").val('1');
+        $('#submitHiddenRoom').click();
+        $('#clickRes').modal('hide');
+        return false;
+    });
 });

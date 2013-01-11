@@ -19,10 +19,8 @@
     var calendar;
     $(document).ready(function () {
 
-
         $("#roomEvents").html('<%= escape_javascript(render :template => "rooms/edit", :formats => [:html], :handlers => [:erb]) %>');
         $(".datepicker").datepicker({ dateFormat:'yy-mm-dd' });
-
 
         var date = new Date();
         var d = date.getDate();
@@ -45,52 +43,27 @@
             },
 
             select:function (start, end, allDay, jsEvent, view, resource) {
-
                 var url = '<%= edit_room_path(@room) %>';
+                var start_date = start.getFullYear().toString() + '-' + (start.getMonth() + 1).toString() + '-' + start.getDate();
+                var end_date   = end.getFullYear().toString() + '-' + (end.getMonth() + 1).toString() + '-' + end.getDate();
 
-                $.get(url, {eid: event.id, from: 'select'}, function (data) {
+                $.get(url, {start_date: start_date, from: 'select', end_date: end_date}, function (data) {
+
                 });
             },
             eventDrop:function (event, dayDelta, minuteDelta, allDay, revertFunc, jsEvent, ui, view) {
 
-                var start = event.start;
-
-                $("#event_" + event.id + " input[id$=_start_date]").val(start);
-                $("#event_" + event.id + " input[id$=_end_date]").val(start);
+                $("#event_" + event.id + " input[id$=_start_date]").val(event.start);
+                $("#event_" + event.id + " input[id$=_end_date]").val(event.start);
                 $('#submitHiddenRoom').click();
 
             },
-
             eventResize:function (event, dayDelta, minuteDelta, revertFunc, jsEvent, ui, view) {
 
-                if (event.end != null) {
-                    var pobj = { id:event.id,
-                        event:{name: event.title, price: event.price, start_date:event.start.toDateString(),
-                            end_date:event.end.toDateString(), color:event.backgroundColor, room_id: '<%= @room.id  %>'},
-                        authenticity_token:'<%= form_authenticity_token  %>',
-                        room_id: '<%= @room.id  %>',
-                        eType: 'resize'};
+                $("#event_" + event.id + " input[id$=_start_date]").val(event.start);
+                $("#event_" + event.id + " input[id$=_end_date]").val(event.end);
+                $('#submitHiddenRoom').click();
 
-                } else {
-                    var pobj = { id:event.id,
-                        calendar:{name: event.title, price: event.price, start_date:event.start.toDateString(),
-                            end_date:event.start.toDateString(), color:event.backgroundColor, room_id: '<%= @room.id  %>'},
-                        authenticity_token:'<%= form_authenticity_token  %>',
-                        eType: 'resize'};
-                }
-
-                $.ajax({
-                    type:"POST",
-                    dataType:'script',
-                    url:'/events#create',
-                    data:pobj,
-                    success:function () {
-                    },
-                    error:function () {
-                        revertFunc();
-                        calendar.fullCalendar('refetchEvents');
-                    }
-                });
             },
             eventClick:function (event, jsEvent, view) {
 

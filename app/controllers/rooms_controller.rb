@@ -45,7 +45,7 @@ class RoomsController < ApplicationController
         format.js { render :layout => false}
       end
     elsif params[:from] == 'select'
-      @event = @room.events.build
+      @event = @room.events.build(:start_date => params[:start_date], :end_date => params[:end_date])
       respond_to do |format|
         format.js { render :layout => false}
       end
@@ -77,15 +77,16 @@ class RoomsController < ApplicationController
   # PUT /rooms/1.json
   def update
     @room = Room.find(params[:id])
+    @eType = params[:commit]
 
     respond_to do |format|
       if @room.update_attributes(params[:room])
-        #format.html { redirect_to @room, notice: 'Room was successfully updated.' }
-        #format.json { head :no_content }
+        @Jevents = @room.reload.events.reload.all.each_with_object([]) {|e, array| array << e.jsonize }.to_json
+        @event = @room.events
         format.js { render :layout => false }
       else
-        #format.html { render action: "edit" }
-        #format.json { render json: @room.errors, status: :unprocessable_entity }
+        @Jevents = @room.reload.events.reload.all.each_with_object([]) {|e, array| array << e.jsonize }.to_json
+        @event = @room.events
         format.js { render :layout => false }
       end
     end

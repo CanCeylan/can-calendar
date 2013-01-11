@@ -89,7 +89,7 @@ class EventsController < ApplicationController
         end
       end
     else
-        update_events(startD, endD, name, price, color, room)
+      update_events(startD, endD, name, price, color, room)
       @Jevents = room.events.all.each_with_object([]) {|e, array| array << e.jsonize }.to_json
       @eType = 'expand'
       respond_to do |format|
