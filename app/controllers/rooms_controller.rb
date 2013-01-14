@@ -4,7 +4,6 @@ class RoomsController < ApplicationController
   def index
     @rooms = Room.all
 
-
     respond_to do |format|
       format.html # index.html.erb
       format.json { render json: @rooms }
@@ -15,12 +14,21 @@ class RoomsController < ApplicationController
   # GET /rooms/1.json
   def show
     @room = Room.find(params[:id])
-    @Jevents = @room.events.each_with_object([]) {|e, array| array << e.jsonize }.to_json
 
-    respond_to do |format|
-      format.html # show.html.erb
-      format.json { render json: @room }
+    if params[:from] == 'click'
+      start_date = params[:start_date].to_date
+      @Jevents = @room.events.where(:start_date => (start_date.beginning_of_month - 5.days)..(start_date.end_of_month+9.days)).each_with_object([]) {|e, array| array << e.jsonize }.to_json
+      respond_to do |format|
+        format.js { render :layout => false}
+      end
+    else
+      @Jevents = @room.events.where(:start_date => Time.now.beginning_of_month..Time.now.end_of_month).collect{|e| e.jsonize }.to_json
+      respond_to do |format|
+        format.html # show.html.erb
+        format.js { render :layout => false}
+      end
     end
+
   end
 
   # GET /rooms/new

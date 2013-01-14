@@ -1,0 +1,5 @@
+calendar.fullCalendar('removeEvents');
+<% if @Jevents != nil %>
+console.log('test');
+calendar.fullCalendar( 'addEventSource', <%=  @Jevents.html_safe %> );
+<% end %>

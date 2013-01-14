@@ -27,6 +27,10 @@
         var m = date.getMonth();
         var y = date.getFullYear();
 
+        $(".fc-button fc-button-next ui-state-default ui-corner-right").click(function(){
+            alert('sad');
+        });
+
         calendar = $('#calendar').fullCalendar({
             header:{
                 left:'prev,next today',
@@ -48,7 +52,6 @@
                 var end_date   = end.getFullYear().toString() + '-' + (end.getMonth() + 1).toString() + '-' + end.getDate();
 
                 $.get(url, {start_date: start_date, from: 'select', end_date: end_date}, function (data) {
-
                 });
             },
             eventDrop:function (event, dayDelta, minuteDelta, allDay, revertFunc, jsEvent, ui, view) {
@@ -74,6 +77,13 @@
             },
             windowResize:function (view) {
                 calendar.fullCalendar('option', 'height', $(window).height() - 40);
+            },
+            viewDisplay: function(view) {
+                var url = '<%= room_path(@room) %>';
+                var start_date = view.start.getFullYear().toString() + '-' + (view.start.getMonth() + 1).toString() + '-' + view.start.getDate();
+
+                $.get(url, {start_date: start_date, from: 'click'}, function (data) {
+                });
             }
         });
 
